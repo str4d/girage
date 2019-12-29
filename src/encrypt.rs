@@ -1,10 +1,11 @@
-use age::{Encryptor, RecipientKey};
+use age::{keys::RecipientKey, Encryptor};
 use gtk::prelude::*;
 use gtk::{FileChooserAction, FileChooserDialog, Inhibit, Orientation::Vertical, ResponseType};
 use relm::{Channel, EventStream, Relm, Widget};
 use relm_derive::{widget, Msg};
+use secrecy::SecretString;
 use std::fs::File;
-use std::io::{self, Write};
+use std::io;
 use std::path::PathBuf;
 use std::thread;
 
@@ -220,12 +221,12 @@ impl Win {
                         .collect(),
                 )
             } else {
-                Encryptor::Passphrase(
+                Encryptor::Passphrase(SecretString::new(
                     self.passphrase
                         .get_text()
                         .expect("get_text failed")
                         .to_string(),
-                )
+                ))
             };
 
             let spinner = gtk::Spinner::new();
@@ -323,7 +324,8 @@ fn encrypt_single_file(
     let mut input = File::open(input_path)?;
     let mut output = encryptor.wrap_output(File::create(output_path)?, armor)?;
     io::copy(&mut input, &mut output)?;
-    output.flush()
+    output.finish()?;
+    Ok(())
 }
 
 fn encrypt_archive(
@@ -340,6 +342,7 @@ fn encrypt_archive(
             &mut input,
         )?;
     }
-    let mut output = archive.into_inner()?;
-    output.flush()
+    let output = archive.into_inner()?;
+    output.finish()?;
+    Ok(())
 }

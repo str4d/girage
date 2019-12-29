@@ -7,12 +7,9 @@ license = "MIT OR Apache-2.0"
 edition = "2018"
 
 [dependencies]
+age = { version = "0.1", default-features = false }
 gtk = "0.7"
 relm = "0.18"
 relm-derive = "0.18"
+secrecy = "0.5"
 tar = "0.4"
-
-[dependencies.age]
-git = "https://github.com/str4d/rage"
-rev = "a0c334fd7840725555f3004a48ddb00dcdbcf053"
-default-features = false
